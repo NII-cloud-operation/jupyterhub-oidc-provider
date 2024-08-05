@@ -42,7 +42,7 @@ def configure_jupyterhub_oidcp(
 
     service_command = [
         sys.executable,
-        "-m", "jupyterhub_oid.main",
+        "-m", "jupyterhub_oidcp.main",
         "--services", services_def,
     ]
     if base_url:

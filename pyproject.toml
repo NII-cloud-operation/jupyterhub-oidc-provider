@@ -12,3 +12,6 @@ dependencies = [
     "jupyterhub",
     "oic"
 ]
+
+[tool.setuptools.packages.find]
+exclude = ["tmp", "testing"]
