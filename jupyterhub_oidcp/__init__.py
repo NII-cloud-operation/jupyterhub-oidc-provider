@@ -30,6 +30,8 @@ def _services_to_dict(services: list[dict]) -> list[dict]:
 def configure_jupyterhub_oidcp(
     c,
     base_url: str | None=None,
+    internal_base_url: str | None=None,
+    port: int=8888,
     services=[],
     vault_path: str | None=None,
     debug=False
@@ -44,10 +46,15 @@ def configure_jupyterhub_oidcp(
         sys.executable,
         "-m", "jupyterhub_oidcp.main",
         "--services", services_def,
+        "--port", str(port),
     ]
     if base_url:
         service_command.extend([
             "--base-url", base_url,
+        ])
+    if internal_base_url:
+        service_command.extend([
+            "--internal-base-url", internal_base_url,
         ])
     if vault_path:
         service_command.extend([
@@ -62,7 +69,7 @@ def configure_jupyterhub_oidcp(
     c.JupyterHub.services.append({
         "name": service_name,
         "admin": False,
-        "url": f"http://localhost:8888/services/{service_name}",
+        "url": f"http://localhost:{port}/services/{service_name}",
         "display": False,
         "command": service_command,
         "oauth_no_confirm": True,

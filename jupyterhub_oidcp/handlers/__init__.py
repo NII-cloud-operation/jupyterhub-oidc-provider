@@ -1,4 +1,4 @@
-from .providerinfo import ProviderInfoHandler
+from .providerinfo import ProviderInfoHandler, InternalProviderInfoHandler
 from .authorization import AuthorizationHandler
 from .token import TokenHandler
 from .jwks import JwksHandler

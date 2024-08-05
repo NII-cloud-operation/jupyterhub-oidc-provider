@@ -41,7 +41,8 @@ c.JupyterHub.load_roles = [
 
 configure_jupyterhub_oidcp(
     c,
-    base_url="http://192.168.168.167:8000",
+    base_url="http://localhost:8000",
+    internal_base_url="http://hub:8000",
     debug=True,
     services=[
         {

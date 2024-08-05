@@ -11,6 +11,7 @@ from traitlets import Unicode, Int, default
 from traitlets.config.application import Application, catch_config_error
 from .handlers import (
     ProviderInfoHandler,
+    InternalProviderInfoHandler,
     AuthorizationHandler,
     TokenHandler,
     JwksHandler,
@@ -29,6 +30,10 @@ class OpenIDConnectProviderApp(Application):
 
     base_url = Unicode(
         help="The base URL of the application."
+    ).tag(config=True)
+
+    internal_base_url = Unicode(
+        help="The internal base URL of the application. e.g. http://hub:8081"
     ).tag(config=True)
 
     service_prefix = Unicode(
@@ -55,6 +60,7 @@ class OpenIDConnectProviderApp(Application):
 
     aliases = {
         "base-url": "OpenIDConnectProviderApp.base_url",
+        "internal-base-url": "OpenIDConnectProviderApp.internal_base_url",
         "port": "OpenIDConnectProviderApp.port",
         "services": "OpenIDConnectProviderApp.services",
         "vault-path": "OpenIDConnectProviderApp.vault_path",
@@ -134,6 +140,7 @@ class OpenIDConnectProviderApp(Application):
             app=self,
             log=self.log,
             base_url=self.base_url,
+            internal_base_url=self.internal_base_url,
             service_prefix=self.service_prefix,
             hub_prefix=self.hub_prefix,
             cookie_secret=os.urandom(32),
@@ -147,6 +154,8 @@ class OpenIDConnectProviderApp(Application):
         return web.Application([
             (oauth_callback_url, HubOAuthCallbackHandler),
             (f'{service_prefix}/.well-known/openid-configuration', ProviderInfoHandler, handler_settings),
+            (f'{service_prefix}/internal/.well-known/openid-configuration',
+             InternalProviderInfoHandler, handler_settings),
             (f'{service_prefix}/authorization', AuthorizationHandler, handler_settings),
             (f'{service_prefix}/token', TokenHandler, handler_settings),
             (f'{service_prefix}/userinfo', UserInfoHandler, handler_settings),
