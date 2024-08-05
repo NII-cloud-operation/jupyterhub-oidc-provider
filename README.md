@@ -8,7 +8,7 @@ This is a JupyterHub service that adds support for OpenID Connect providers to t
 testing/jupyterhub_config.py
 
 ```python
-from jupyterhub_oidcp import configure_jupyterhub_oid
+from jupyterhub_oidcp import configure_jupyterhub_oidcp
 
 c.JupyterHub.load_roles = [
     {
@@ -17,7 +17,7 @@ c.JupyterHub.load_roles = [
     }
 ]
 
-configure_jupyterhub_oid(
+configure_jupyterhub_oidcp(
     c,
     base_url="http://192.168.168.167:8000",
     debug=True,
@@ -34,7 +34,7 @@ configure_jupyterhub_oid(
 
 ## How to test
 
-1. Clone the repository
+1. Clone this repository
 2. Install the JupyterHub https://jupyterhub.readthedocs.io/en/latest/contributing/setup.html
 3. Back to the directory 1. and run the following command:
 

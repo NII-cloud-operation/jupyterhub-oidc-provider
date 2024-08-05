@@ -27,7 +27,7 @@ def _services_to_dict(services: list[dict]) -> list[dict]:
     return [x for x in r if x is not None]
 
 
-def configure_jupyterhub_oid(
+def configure_jupyterhub_oidcp(
     c,
     base_url: str | None=None,
     services=[],
@@ -37,7 +37,7 @@ def configure_jupyterhub_oid(
     """
     Add the OIDC service to the JupyterHub configuration.
     """
-    service_name = "oid"
+    service_name = "oidcp"
     services_def = json.dumps(_services_to_dict(services))
 
     service_command = [

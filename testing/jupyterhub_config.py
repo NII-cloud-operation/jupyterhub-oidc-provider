@@ -30,7 +30,7 @@ c.Authenticator.admin_users = {"admin"}
 c.Authenticator.allow_all = True
 
 # Install the jupyterhub_oidcp plugins
-from jupyterhub_oidcp import configure_jupyterhub_oid
+from jupyterhub_oidcp import configure_jupyterhub_oidcp
 
 c.JupyterHub.load_roles = [
     {
@@ -39,7 +39,7 @@ c.JupyterHub.load_roles = [
     }
 ]
 
-configure_jupyterhub_oid(
+configure_jupyterhub_oidcp(
     c,
     base_url="http://192.168.168.167:8000",
     debug=True,
@@ -50,6 +50,6 @@ configure_jupyterhub_oid(
             "redirect_uris": ["http://localhost:9001/ep_openid_connect/callback"],
         }
     ],
-    vault_path="/tmp/jupyterhub_oid/.vault",
+    vault_path="./tmp/jupyterhub_oid/.vault",
 )
 
