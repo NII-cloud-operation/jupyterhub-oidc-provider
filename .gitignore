@@ -1,0 +1,13 @@
+# .gitignore for Python projects
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+.python-version
+
+# jupyterhub
+jupyterhub_cookie_secret
+jupyterhub.sqlite
+jupyterhub-proxy.pid
+tmp/

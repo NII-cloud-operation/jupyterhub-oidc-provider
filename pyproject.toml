@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jupyterhub-oid"
+version = "0.1.0"
+
+description = "OpenID Connect Provider on JupyterHub"
+
+dependencies = [
+    "jupyterhub",
+    "oic"
+]
