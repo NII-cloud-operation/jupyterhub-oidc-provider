@@ -15,7 +15,13 @@ jupyterhub_oidcp behaves as an OpenID Connect provider and allows JupyterHub to 
 
 ## How to use
 
-testing/jupyterhub_config.py
+1. Install the package:
+
+```bash
+pip install git+url_to_this_repository
+```
+
+2. Add the following configuration to the JupyterHub configuration file:
 
 ```python
 from jupyterhub_oidcp import configure_jupyterhub_oidcp
@@ -42,6 +48,45 @@ configure_jupyterhub_oidcp(
     vault_path="./tmp/jupyterhub_oid/.vault",
 )
 ```
+
+3. Run the JupyterHub
+
+```bash
+jupyterhub
+```
+
+### Configuration
+
+The `configure_jupyterhub_oidcp` function accepts the following parameters:
+
+- `c`: JupyterHub configuration object
+- `base_url`: The base URL of the JupyterHub
+- `internal_base_url`: The internal base URL of the JupyterHub
+- `debug`: Enable debug mode
+- `services`: A list of OpenID Connect clients that can authenticate users
+- `vault_path`: The path to the vault file
+
+jupyterhub_oidcp uses a vault directory to store the JWKs. The vault directory is created at the `vault_path` if it does not exist. The vault directory is used to store the JWKs for the OpenID Connect clients. The JWKs are used to sign the JWTs used in the OpenID Connect protocol.
+
+### OpenID Connect Client Configuration
+
+The `services` parameter is a list of OpenID Connect clients that can authenticate users. Each client is a dictionary with the following keys:
+
+- `oauth_client_id`: The client ID of the OpenID Connect client
+- `api_token`: The client secret of the OpenID Connect client
+- `redirect_uris`: A list of redirect URIs for the OpenID Connect client
+
+### Client Configuration
+
+The OpenID Connect client must be configured to use the JupyterHub OIDCP service. The client must be configured with the following parameters:
+
+- `issuer`: The issuer URL of the JupyterHub OIDCP service.
+
+    - `http://jupyterhub_host/services/oidcp/`: The issuer URL of the JupyterHub OIDCP service for clients on the external network.
+    - `http://jupyterhub_internal_host/services/oidcp/internal/`: The issuer URL of the JupyterHub OIDCP service for clients on the internal network.
+
+- `client_id`: The client ID of the OpenID Connect client
+- `client_secret`: The client secret of the OpenID Connect client
 
 ## How to test
 
