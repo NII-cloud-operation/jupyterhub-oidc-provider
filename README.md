@@ -18,7 +18,7 @@ jupyterhub_oidcp behaves as an OpenID Connect provider and allows JupyterHub to 
 1. Install the package:
 
 ```bash
-pip install git+url_to_this_repository
+pip install git+https://github.com/NII-cloud-operation/jupyterhub-oidc-provider.git
 ```
 
 2. Add the following configuration to the JupyterHub configuration file:
