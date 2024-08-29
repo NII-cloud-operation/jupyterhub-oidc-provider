@@ -2,6 +2,7 @@ import json
 
 from .base import BaseOIDHandler
 
+
 class JwksHandler(BaseOIDHandler):
     def get(self):
         keybundle = self.provider.keybundle

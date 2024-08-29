@@ -2,7 +2,7 @@ import asyncio
 import json
 import logging
 import os
-from urllib.parse import urlparse, urljoin
+from urllib.parse import urljoin
 
 from tornado import web
 from jupyterhub.traitlets import URLPrefix
@@ -72,7 +72,7 @@ class OpenIDConnectProviderApp(Application):
     def _base_url_default(self):
         base_url = os.environ['JUPYTERHUB_BASE_URL']
         return base_url
-    
+
     @default("service_prefix")
     def _service_prefix_default(self):
         service_prefix = os.environ['JUPYTERHUB_SERVICE_PREFIX']
@@ -123,7 +123,9 @@ class OpenIDConnectProviderApp(Application):
         logger.info(f"Logging level set to {level}")
 
     def _make_app(self):
-        self.log.info(f"Making OpenID Connect Provider App base_url={self.base_url}, service_prefix={self.service_prefix}")
+        self.log.info("Making OpenID Connect Provider App " +
+                      f"base_url={self.base_url}," +
+                      f"service_prefix={self.service_prefix}")
         services = json.loads(self.services)
         self.log.info(f"Services: {services}")
         provider = HubOAuthProvider(
@@ -153,14 +155,23 @@ class OpenIDConnectProviderApp(Application):
             service_prefix = service_prefix[:-1]
         return web.Application([
             (oauth_callback_url, HubOAuthCallbackHandler),
-            (f'{service_prefix}/.well-known/openid-configuration', ProviderInfoHandler, handler_settings),
+            (
+                f'{service_prefix}/.well-known/openid-configuration',
+                ProviderInfoHandler,
+                handler_settings,
+            ),
             (f'{service_prefix}/internal/.well-known/openid-configuration',
              InternalProviderInfoHandler, handler_settings),
-            (f'{service_prefix}/authorization', AuthorizationHandler, handler_settings),
+            (
+                f'{service_prefix}/authorization',
+                AuthorizationHandler,
+                handler_settings,
+            ),
             (f'{service_prefix}/token', TokenHandler, handler_settings),
             (f'{service_prefix}/userinfo', UserInfoHandler, handler_settings),
             (f'{service_prefix}/jwks.json', JwksHandler, handler_settings),
         ], **tornado_settings)
+
 
 if __name__ == "__main__":
     OpenIDConnectProviderApp.launch_instance()

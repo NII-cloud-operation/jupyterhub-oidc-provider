@@ -1,5 +1,6 @@
 from .base import BaseOIDHandler
 
+
 class TokenHandler(BaseOIDHandler):
     def post(self):
         resp = self.provider.token_endpoint(

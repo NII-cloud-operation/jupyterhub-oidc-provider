@@ -1,9 +1,9 @@
 import json
 import sys
-from urllib.parse import urljoin
+from typing import Optional, List
 
 
-def _service_to_dict(service: dict) -> dict | None:
+def _service_to_dict(service: dict) -> Optional[dict]:
     """
     Convert a service to a dictionary.
     """
@@ -19,7 +19,8 @@ def _service_to_dict(service: dict) -> dict | None:
         "redirect_uris": service['redirect_uris'],
     }
 
-def _services_to_dict(services: list[dict]) -> list[dict]:
+
+def _services_to_dict(services: List[dict]) -> List[dict]:
     """
     Convert a list of services to a list of dictionaries.
     """
@@ -29,11 +30,11 @@ def _services_to_dict(services: list[dict]) -> list[dict]:
 
 def configure_jupyterhub_oidcp(
     c,
-    base_url: str | None=None,
-    internal_base_url: str | None=None,
-    port: int=8888,
+    base_url: Optional[str] = None,
+    internal_base_url: Optional[str] = None,
+    port: int = 8888,
     services=[],
-    vault_path: str | None=None,
+    vault_path: Optional[str] = None,
     debug=False
 ):
     """

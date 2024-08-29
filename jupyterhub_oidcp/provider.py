@@ -2,6 +2,7 @@ import logging
 import json
 import tempfile
 import time
+from typing import List, Optional
 from urllib.parse import urljoin
 
 from oic import rndstr
@@ -19,18 +20,19 @@ COOKIE_PREFIX = "jupyterhub:"
 
 class ServicesClientDatabase(BaseClientDatabase):
     """
-    A subclass of oic.utils.clientdb.BaseClientDatabase that wraps the JupyterHub services
+    A subclass of oic.utils.clientdb.BaseClientDatabase
+    that wraps the JupyterHub services
     """
 
-    services: list[dict]
+    services: List[dict]
 
-    def __init__(self, services: list[dict]):
+    def __init__(self, services: List[dict]):
         """
         Initialize the client database.
         """
         self.services = self._validate(services)
 
-    def _validate(self, services: list[dict]) -> list[dict]:
+    def _validate(self, services: List[dict]) -> List[dict]:
         """
         Validate the services.
         """
@@ -62,10 +64,16 @@ class ServicesClientDatabase(BaseClientDatabase):
                     raise ValueError("Redirect URI must have two elements.")
                 first, second = uri
                 if not isinstance(first, str):
-                    raise ValueError("Redirect URI first element must be a string.")
+                    raise ValueError(
+                        "Redirect URI first element must be a string."
+                    )
                 if second is not None and not isinstance(second, str):
-                    raise ValueError("Redirect URI second element must be a string or None.")
-            validated_service['client_id'] = base_service.get('oauth_client_id')
+                    raise ValueError(
+                        "Redirect URI second element must be a string or None."
+                    )
+            validated_service['client_id'] = base_service.get(
+                'oauth_client_id'
+            )
             validated_service['client_secret'] = base_service.get('api_token')
             validated_service['client_salt'] = rndstr(8)
         logger.info("Validated services")
@@ -100,12 +108,16 @@ class ServicesClientDatabase(BaseClientDatabase):
         Get the items of the client database.
         """
         logger.info("Getting items from client database")
-        return [(service['oauth_client_id'], service) for service in self.services]
+        return [
+            (service['oauth_client_id'], service)
+            for service in self.services
+        ]
 
 
 class HubOAuthAuthnMethod(UserAuthnMethod):
     """
-    A subclass of oic.utils.authn.user.UserAuthnMethod that wraps the JupyterHub services
+    A subclass of oic.utils.authn.user.UserAuthnMethod
+    that wraps the JupyterHub services
     """
 
     @staticmethod
@@ -124,7 +136,7 @@ class HubOAuthAuthnMethod(UserAuthnMethod):
             "uid": user["name"],
             "created": user["created"],
         })
-    
+
     @staticmethod
     def cookie_to_current_user(cookie):
         """
@@ -148,9 +160,11 @@ class HubOAuthAuthnMethod(UserAuthnMethod):
         """
         Authenticate as a user.
 
-        HubOAuthProvider passes the user information as the jupyterhub_currentuser.
+        HubOAuthProvider passes the user information
+        as the jupyterhub_currentuser.
         """
-        logger.info(f"Authenticating as user: {cookie}, {authorization}, {kwargs}")
+        logger.info("Authenticating as user: " +
+                    f"{cookie}, {authorization}, {kwargs}")
         user = HubOAuthAuthnMethod.cookie_to_current_user(cookie)
         ts = int(time.time())
         return user, ts
@@ -163,7 +177,7 @@ def _get_authn_broker():
     return authn_broker
 
 
-def _authz(user, client_id: str | None=None):
+def _authz(user, client_id: Optional[str] = None):
     logger.info(f"Authorizing user: {user}, {client_id}")
     return ""
 
@@ -179,9 +193,10 @@ def _client_authn(provider, areq, authn):
     raise ValueError(f"Client not found for redirect URI: {redirect_uri}")
 
 
-def _userinfo_factory(email_pattern: str | None=None):
+def _userinfo_factory(email_pattern: Optional[str] = None):
     def _userinfo(uid, client_uid, userinfo_claims):
-        logger.info(f"Getting userinfo: {uid}, {client_uid}, {userinfo_claims}")
+        logger.info(f"Getting userinfo: {uid}, " +
+                    f"{client_uid}, {userinfo_claims}")
         userinfo = {
             "sub": uid,
             "name": uid,
@@ -201,10 +216,10 @@ class HubOAuthProvider(Provider):
     def __init__(
         self,
         name,
-        services: list[dict],
+        services: List[dict],
         baseurl: str,
-        vault_path: str | None=None,
-        email_pattern: str | None=None,
+        vault_path: Optional[str] = None,
+        email_pattern: Optional[str] = None,
     ):
         """
         Initialize the provider.
@@ -226,10 +241,13 @@ class HubOAuthProvider(Provider):
         )
         self._init_keys(vault_path)
 
-    def _init_keys(self, vault_path: str | None=None):
+    def _init_keys(self, vault_path: Optional[str] = None):
         if vault_path is None or vault_path == "":
             vault_path = tempfile.mkdtemp()
-        self.keybundle = key_setup(vault_path, sig={"format": "jwk", "alg": "rsa"})
+        self.keybundle = key_setup(
+            vault_path,
+            sig={"format": "jwk", "alg": "rsa"},
+        )
         keyjar = self.keyjar
         try:
             keyjar[""].append(self.keybundle)
