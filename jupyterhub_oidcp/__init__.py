@@ -30,11 +30,15 @@ def _services_to_dict(services: List[dict]) -> List[dict]:
 
 def configure_jupyterhub_oidcp(
     c,
+    issuer: Optional[str] = None,
     base_url: Optional[str] = None,
     internal_base_url: Optional[str] = None,
     port: int = 8888,
     services=[],
     vault_path: Optional[str] = None,
+    email_pattern: Optional[str] = None,
+    admin_email_pattern: Optional[str] = None,
+    user_email_pattern: Optional[str] = None,
     oauth_client_allowed_scopes=["inherit"],
     debug=False
 ):
@@ -50,6 +54,10 @@ def configure_jupyterhub_oidcp(
         "--services", services_def,
         "--port", str(port),
     ]
+    if issuer:
+        service_command.extend([
+            "--issuer", issuer,
+        ])
     if base_url:
         service_command.extend([
             "--base-url", base_url,
@@ -61,6 +69,18 @@ def configure_jupyterhub_oidcp(
     if vault_path:
         service_command.extend([
             "--vault-path", vault_path,
+        ])
+    if email_pattern:
+        service_command.extend([
+            "--email-pattern", email_pattern,
+        ])
+    if admin_email_pattern:
+        service_command.extend([
+            "--admin-email-pattern", admin_email_pattern,
+        ])
+    if user_email_pattern:
+        service_command.extend([
+            "--user-email-pattern", user_email_pattern,
         ])
 
     if debug:

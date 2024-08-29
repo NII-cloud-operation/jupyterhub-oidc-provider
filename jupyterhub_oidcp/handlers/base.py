@@ -3,14 +3,17 @@ from oic.utils.http_util import Response
 from tornado import web
 from tornado.log import app_log
 
+from ..userstore import UserStore
+
 
 class BaseOIDHandler(web.RequestHandler):
     @property
     def log(self):
         return self.settings.get('log', app_log)
 
-    def initialize(self, provider: Provider):
+    def initialize(self, provider: Provider, userstore: UserStore):
         self.provider = provider
+        self.userstore = userstore
 
     def finish_response(self, response: Response):
         if response.status_code == 302 or response.status_code == 303:

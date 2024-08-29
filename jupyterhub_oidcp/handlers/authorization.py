@@ -3,6 +3,7 @@ from tornado import web
 
 from .base import BaseOIDHandler
 from ..provider import HubOAuthAuthnMethod
+from ..userstore import UserInfo
 
 
 class AuthorizationHandler(HubOAuthenticated, BaseOIDHandler):
@@ -16,4 +17,6 @@ class AuthorizationHandler(HubOAuthenticated, BaseOIDHandler):
         )
         user = self.get_current_user()
         self.log.debug(f"AuthorizationHandler.get: {resp}, user={user}")
+        userinfo = UserInfo.from_huboauth_user(user)
+        self.userstore.set_user(userinfo)
         self.finish_response(resp)

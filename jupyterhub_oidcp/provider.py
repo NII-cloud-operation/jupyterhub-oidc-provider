@@ -13,6 +13,9 @@ from oic.utils.clientdb import BaseClientDatabase
 from oic.utils.sdb import create_session_db
 from oic.utils.keyio import key_setup
 
+from .emailpattern import EmailPattern
+from .userstore import UserStore
+
 
 logger = logging.getLogger(__name__)
 COOKIE_PREFIX = "jupyterhub:"
@@ -130,12 +133,12 @@ class HubOAuthAuthnMethod(UserAuthnMethod):
             raise ValueError("User must not be None.")
         if "name" not in user:
             raise ValueError("User must have a 'name' key.")
-        if "created" not in user:
-            raise ValueError("User must have a 'created' key.")
-        return COOKIE_PREFIX + json.dumps({
+        u = {
             "uid": user["name"],
-            "created": user["created"],
-        })
+        }
+        if "created" in user:
+            u["created"] = user["created"]
+        return COOKIE_PREFIX + json.dumps(u)
 
     @staticmethod
     def cookie_to_current_user(cookie):
@@ -193,7 +196,10 @@ def _client_authn(provider, areq, authn):
     raise ValueError(f"Client not found for redirect URI: {redirect_uri}")
 
 
-def _userinfo_factory(email_pattern: Optional[str] = None):
+def _userinfo_factory(
+    userstore: UserStore,
+    email_pattern: Optional[EmailPattern] = None,
+):
     def _userinfo(uid, client_uid, userinfo_claims):
         logger.info(f"Getting userinfo: {uid}, " +
                     f"{client_uid}, {userinfo_claims}")
@@ -202,8 +208,14 @@ def _userinfo_factory(email_pattern: Optional[str] = None):
             "name": uid,
             "preferred_username": uid,
         }
-        if email_pattern:
-            userinfo["email"] = email_pattern.format(uid=uid)
+        if not email_pattern:
+            return userinfo
+        resolved_email_pattern = email_pattern.get_pattern_for(
+            userstore.get_user(uid).admin
+        )
+        if not resolved_email_pattern:
+            return userinfo
+        userinfo["email"] = resolved_email_pattern.format(uid=uid)
         return userinfo
     return _userinfo
 
@@ -215,11 +227,12 @@ class HubOAuthProvider(Provider):
 
     def __init__(
         self,
-        name,
+        name: str,
         services: List[dict],
         baseurl: str,
+        userstore: UserStore,
         vault_path: Optional[str] = None,
-        email_pattern: Optional[str] = None,
+        email_pattern: Optional[EmailPattern] = None,
     ):
         """
         Initialize the provider.
@@ -234,7 +247,7 @@ class HubOAuthProvider(Provider):
             ),
             ServicesClientDatabase(services),
             _get_authn_broker(),
-            _userinfo_factory(email_pattern),
+            _userinfo_factory(userstore, email_pattern),
             _authz,
             _client_authn,
             baseurl=baseurl
