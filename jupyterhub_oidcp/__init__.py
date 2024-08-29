@@ -35,6 +35,7 @@ def configure_jupyterhub_oidcp(
     port: int = 8888,
     services=[],
     vault_path: Optional[str] = None,
+    oauth_client_allowed_scopes=["inherit"],
     debug=False
 ):
     """
@@ -67,12 +68,14 @@ def configure_jupyterhub_oidcp(
             "--debug"
         ])
 
-    c.JupyterHub.services.append({
+    service = {
         "name": service_name,
         "admin": False,
         "url": f"http://localhost:{port}/services/{service_name}",
         "display": False,
         "command": service_command,
         "oauth_no_confirm": True,
-        "oauth_client_allowed_scopes": ["inherit"]
-    })
+    }
+    if oauth_client_allowed_scopes is not None:
+        service["oauth_client_allowed_scopes"] = oauth_client_allowed_scopes
+    c.JupyterHub.services.append(service)
