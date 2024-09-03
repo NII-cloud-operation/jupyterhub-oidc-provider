@@ -1,5 +1,6 @@
 from .base import BaseOIDHandler
 
+
 class UserInfoHandler(BaseOIDHandler):
     def get(self):
         resp = self.provider.userinfo_endpoint(

@@ -2,7 +2,7 @@ import asyncio
 import json
 import logging
 import os
-from urllib.parse import urlparse, urljoin
+from urllib.parse import urljoin
 
 from tornado import web
 from jupyterhub.traitlets import URLPrefix
@@ -17,7 +17,9 @@ from .handlers import (
     JwksHandler,
     UserInfoHandler,
 )
+from .emailpattern import EmailPattern
 from .provider import HubOAuthProvider
+from .userstore import MemoryUserStore
 
 
 logger = logging.getLogger(__name__)
@@ -27,6 +29,11 @@ class OpenIDConnectProviderApp(Application):
     """
     A jupyter Application that provides OpenID Connect endpoints.
     """
+
+    issuer = Unicode(
+        "jupyterhub",
+        help="The issuer of the OpenID Connect provider."
+    ).tag(config=True)
 
     base_url = Unicode(
         help="The base URL of the application."
@@ -58,12 +65,24 @@ class OpenIDConnectProviderApp(Application):
         the email address will be 'user1@example.com'""",
     ).tag(config=True)
 
+    admin_email_pattern = Unicode(
+        help="The format of the email address to use for the admin user."
+    ).tag(config=True)
+
+    user_email_pattern = Unicode(
+        help="The format of the email address to use for the non-admin user."
+    ).tag(config=True)
+
     aliases = {
+        "issuer": "OpenIDConnectProviderApp.issuer",
         "base-url": "OpenIDConnectProviderApp.base_url",
         "internal-base-url": "OpenIDConnectProviderApp.internal_base_url",
         "port": "OpenIDConnectProviderApp.port",
         "services": "OpenIDConnectProviderApp.services",
         "vault-path": "OpenIDConnectProviderApp.vault_path",
+        "email-pattern": "OpenIDConnectProviderApp.email_pattern",
+        "admin-email-pattern": "OpenIDConnectProviderApp.admin_email_pattern",
+        "user-email-pattern": "OpenIDConnectProviderApp.user_email_pattern",
     }
 
     hub_prefix = URLPrefix('/hub/')
@@ -72,7 +91,7 @@ class OpenIDConnectProviderApp(Application):
     def _base_url_default(self):
         base_url = os.environ['JUPYTERHUB_BASE_URL']
         return base_url
-    
+
     @default("service_prefix")
     def _service_prefix_default(self):
         service_prefix = os.environ['JUPYTERHUB_SERVICE_PREFIX']
@@ -123,15 +142,24 @@ class OpenIDConnectProviderApp(Application):
         logger.info(f"Logging level set to {level}")
 
     def _make_app(self):
-        self.log.info(f"Making OpenID Connect Provider App base_url={self.base_url}, service_prefix={self.service_prefix}")
+        self.log.info("Making OpenID Connect Provider App " +
+                      f"base_url={self.base_url}," +
+                      f"service_prefix={self.service_prefix}")
         services = json.loads(self.services)
         self.log.info(f"Services: {services}")
+        userstore = MemoryUserStore()
+        email_pattern = EmailPattern(
+            pattern=self.email_pattern,
+            pattern_admin=self.admin_email_pattern,
+            pattern_user=self.user_email_pattern,
+        )
         provider = HubOAuthProvider(
-            "jupyterhub",
+            self.issuer,
             services,
             urljoin(self.base_url, self.service_prefix),
+            userstore,
             vault_path=self.vault_path,
-            email_pattern=self.email_pattern,
+            email_pattern=email_pattern,
         )
         oauth_callback_url = os.environ.get(
             'JUPYTERHUB_OAUTH_CALLBACK_URL',
@@ -147,20 +175,30 @@ class OpenIDConnectProviderApp(Application):
         )
         handler_settings = dict(
             provider=provider,
+            userstore=userstore,
         )
         service_prefix = self.service_prefix
         if service_prefix.endswith('/'):
             service_prefix = service_prefix[:-1]
         return web.Application([
             (oauth_callback_url, HubOAuthCallbackHandler),
-            (f'{service_prefix}/.well-known/openid-configuration', ProviderInfoHandler, handler_settings),
+            (
+                f'{service_prefix}/.well-known/openid-configuration',
+                ProviderInfoHandler,
+                handler_settings,
+            ),
             (f'{service_prefix}/internal/.well-known/openid-configuration',
              InternalProviderInfoHandler, handler_settings),
-            (f'{service_prefix}/authorization', AuthorizationHandler, handler_settings),
+            (
+                f'{service_prefix}/authorization',
+                AuthorizationHandler,
+                handler_settings,
+            ),
             (f'{service_prefix}/token', TokenHandler, handler_settings),
             (f'{service_prefix}/userinfo', UserInfoHandler, handler_settings),
             (f'{service_prefix}/jwks.json', JwksHandler, handler_settings),
         ], **tornado_settings)
+
 
 if __name__ == "__main__":
     OpenIDConnectProviderApp.launch_instance()
