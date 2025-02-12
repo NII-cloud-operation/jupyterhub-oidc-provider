@@ -15,3 +15,10 @@ dependencies = [
 
 [tool.setuptools.packages.find]
 exclude = ["tmp", "testing"]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+    "pytest-mock",
+]
