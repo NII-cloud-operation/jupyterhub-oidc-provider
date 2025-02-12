@@ -9,9 +9,10 @@ class JwksHandler(BaseOIDHandler):
         resp = json.loads(str(keybundle))
         for key in resp['keys']:
             # Remove the private exponent from the key
-            del key['d']
-            if 'k' in key:
-                del key['k']
+            for prop in ['d', 'p', 'q', 'dp', 'dq', 'qi', 'k']:
+                if prop not in key:
+                    continue
+                del key[prop]
         self.log.debug(f"JwksHandler.get: {resp}")
         self.set_status(200)
         self.finish(resp)
