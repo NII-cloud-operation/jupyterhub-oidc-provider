@@ -40,12 +40,12 @@ def configure_jupyterhub_oidcp(
     admin_email_pattern: Optional[str] = None,
     user_email_pattern: Optional[str] = None,
     oauth_client_allowed_scopes=["inherit"],
+    service_name="oidcp",
     debug=False
 ):
     """
     Add the OIDC service to the JupyterHub configuration.
     """
-    service_name = "oidcp"
     services_def = json.dumps(_services_to_dict(services))
 
     service_command = [
@@ -90,7 +90,6 @@ def configure_jupyterhub_oidcp(
 
     service = {
         "name": service_name,
-        "admin": False,
         "url": f"http://localhost:{port}/services/{service_name}",
         "display": False,
         "command": service_command,

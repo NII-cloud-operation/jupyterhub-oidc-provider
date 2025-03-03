@@ -60,6 +60,7 @@ jupyterhub
 The `configure_jupyterhub_oidcp` function accepts the following parameters:
 
 - `c`: JupyterHub configuration object
+- `service_name`: The name of the service, default is `oidcp`
 - `base_url`: The base URL of the JupyterHub
 - `internal_base_url`: The internal base URL of the JupyterHub
 - `debug`: Enable debug mode
